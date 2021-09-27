@@ -192,6 +192,12 @@ namespace ProcessCapturedNTData
                     //CSVReader will now read the whole file into an enumerable
                     List<BarRecord> records = reader.GetRecords<BarRecord>().ToList();
 
+                    //Covert captured NT data into bar records
+                    List<BarRecord> barRecords = new List<BarRecord>();
+
+
+                    // Below is for the generation of Augmented Data from Captured NT data using interpolation, ver 1-9
+                    /* 
                     for (int slidingNum = 0; slidingNum < Constants.slidingTotal; slidingNum++)
                     {
                         //Covert captured NT data into bar records
@@ -212,6 +218,22 @@ namespace ProcessCapturedNTData
                             writer.WriteRecords(barRecords);
                             writer.Flush();
                         }
+                    }
+                    */
+
+                    // Below is for the generation of Augmented Data from Captured NT data using tick shifting of the captured NT data, ver 11-19
+                    String outFile = Constants.TickCount + "-ticks\\" + Path.GetFileNameWithoutExtension(inFile) + "-" + Constants.TickCount + "-bar" + args[0] + ".csv";
+                    using (var sw = new StreamWriter(outFile))
+                    {
+                        var writer = new CsvWriter(sw, CultureInfo.InvariantCulture);
+
+                        //provide the lookahead bars
+                        BuildLookAhead5Bars(records);
+
+                        //Write the entire contents of the CSV file into another
+                        //Do not use WriteHeader as WriteRecords will have done that already.
+                        writer.WriteRecords(records);
+                        writer.Flush();
                     }
                 }
             }
